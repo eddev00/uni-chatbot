@@ -89,4 +89,10 @@ plt.show()
 
 
 # Saving the Model
-model.save('chatbot.h5')
+# h5py needs to be installed
+
+try:
+    model.save('chatbot.h5')
+    print("Model saved successfully")
+except Exception as error:
+    print("Error saving model", error)

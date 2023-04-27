@@ -2,6 +2,8 @@
 
 
 # Importing the Libraries
+from sklearn.preprocessing import LabelEncoder
+from keras_preprocessing.sequence import pad_sequences
 import string
 import numpy as np
 import tensorflow as tf
@@ -33,10 +35,40 @@ Ddata = pd.DataFrame({'patterns': patterns, 'tags': tags})
 
 
 # Preprocessing the Dataset
+# Removing punctuations
 Ddata['patterns'] = Ddata['patterns'].apply(
     lambda word: [ltrs.lower() for ltrs in word if ltrs not in string.punctuation])
 Ddata['patterns'] = Ddata['patterns'].apply(lambda word: ''.join(word))
 
 
-Ddata
-# Removing punctuations
+# Tokenizing the Dataset
+tokenizer = Tokenizer(num_words=2000)
+tokenizer.fit_on_texts(Ddata['patterns'])
+train = tokenizer.texts_to_sequences(Ddata['patterns'])
+
+# Padding the Dataset
+x_train = pad_sequences(train)
+
+
+# encoding the output
+le = LabelEncoder()
+y_train = le.fit_transform(Ddata['tags'])
+
+input_shape = x_train.shape[1]
+print(input_shape)
+
+# define vocabulary
+vocab_size = len(tokenizer.word_index)
+print("number of unique words: ", vocab_size)
+output_length = le.classes_.shape[0]
+print("output length: ", output_length)
+
+
+# Building the Model
+# Neural network model
+i = Input(shape=(input_shape,))
+x = Embedding(vocab_size+1, 10)(i)
+x = LSTM(10, return_sequences=True)(x)
+x = Flatten()(x)
+x = Dense(output_length, activation='softmax')(x)
+model = Model(i, x)

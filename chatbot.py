@@ -72,3 +72,21 @@ x = LSTM(10, return_sequences=True)(x)
 x = Flatten()(x)
 x = Dense(output_length, activation='softmax')(x)
 model = Model(i, x)
+
+
+# Compiling the Model
+model.compile(loss="sparse_categorical_crossentropy",
+              optimizer="adam", metrics=["accuracy"])
+
+# Training the Model
+train = model.fit(x_train, y_train, epochs=200)
+
+# Plotting the Loss and Accuracy
+plt.plot(train.history['loss'], label='loss')
+plt.plot(train.history['accuracy'], label='accuracy')
+plt.legend()
+plt.show()
+
+
+# Saving the Model
+model.save('chatbot.h5')

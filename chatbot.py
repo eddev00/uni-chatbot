@@ -2,6 +2,7 @@
 
 
 # Importing the Libraries
+import pickle
 from sklearn.preprocessing import LabelEncoder
 from keras_preprocessing.sequence import pad_sequences
 import string
@@ -54,6 +55,10 @@ x_train = pad_sequences(train)
 le = LabelEncoder()
 y_train = le.fit_transform(Ddata['tags'])
 
+# exporting the label encoder
+with open('label_encoder.pkl', 'wb') as file:
+    pickle.dump(le, file)
+
 input_shape = x_train.shape[1]
 print(input_shape)
 
@@ -86,6 +91,39 @@ plt.plot(train.history['loss'], label='loss')
 plt.plot(train.history['accuracy'], label='accuracy')
 plt.legend()
 plt.show()
+
+
+while True:
+    texts_p = []
+    prediction_input = input("You: ")
+
+    # Removing punctuations and converting to lowercase
+    prediction_input = [
+        ltrs.lower() for ltrs in prediction_input if ltrs not in string.punctuation]
+    prediction_input = ''.join(prediction_input)
+    texts_p.append(prediction_input)
+
+    # Tokenizing the input
+    prediction_input = tokenizer.texts_to_sequences(texts_p)
+    prediction_input = np.array(prediction_input).reshape(-1)
+
+    prediction_input = pad_sequences(
+        [prediction_input], input_shape)
+
+    # predicting the output
+    output = model.predict(prediction_input)
+    output = np.argmax(output)
+
+    # Getting the tag
+    response_tag = le.inverse_transform([output])[0]
+
+    import chatbot
+
+    responses = chatbot.responses
+    import random
+    print("Bot: ", random.choice(responses[response_tag]))
+    if response_tag == 'goodbye':
+        break
 
 
 # Saving the Model
